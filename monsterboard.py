@@ -1,0 +1,61 @@
+import requests
+from bs4 import BeautifulSoup
+import json
+import pandas as pd
+import numpy as np
+from telegram_bot import telegram_send_text
+
+def get_url(keyword):
+    url = 'https://www.monsterboard.nl/vacatures/zoeken/?q=' + str(keyword).replace(' ', '-') + '&cy=nl'
+    return url
+
+def get_soup(url):
+    page = requests.get(url).text
+    soup = BeautifulSoup(str(page), 'html.parser')
+    return soup
+
+def get_itemlinks(soup):
+    soup = soup.find('div', {'class': 'scrollable'})
+    soup = soup.find('script',{'type': 'application/ld+json'}).contents
+    soup = json.loads(soup[0])
+    return soup
+
+def create_df(keyword='Data Analyst'):
+    url = get_url(keyword)
+    soup = get_soup(url)
+    jresponse = get_itemlinks(soup)
+    jresponse = [str(i['url']) for i in jresponse["itemListElement"]]
+    df = pd.DataFrame({'keyword':keyword,'url':jresponse})
+    df['url'].replace('', np.nan, inplace=True)
+    df.dropna(subset=['url'], inplace=True)
+    #df[~df['url'].str.contains(r"---")]
+    #windows_dir = 'C:\\Users\\LorenzKort\'
+    return df
+
+def notify(df, file_name, keyword, chat_id='-425371692'):
+    with open(file_name, 'r') as f:
+        for ind in df.index:
+            if any(df['url'][ind] in line for line in f):
+                pass # known id
+            else:
+                print('New ' + keyword)
+                telegram_send_text('Nieuwe vacature met keyword "' + keyword + '": ' + df['url'][ind], chat_id)
+                break
+    return
+
+def check(keyword='Data Steward', chat_id='-459671235'):
+    #pi_dir = '/home/pi/Documents/Python/...'
+    #mac_dir = '/Users/lorenzkort/Documents/Python/marktplaatsMaster/data/'
+    dir = ''
+    file_name = dir + 'Monsterboard_' + keyword.replace(' ','_').lower() + '_response.csv'
+    try:
+        items_df = create_df(keyword) # get items
+        notify(items_df, file_name, keyword, chat_id) # mail new id's
+    except:
+        items_df = pd.DataFrame()
+    items_df.to_csv(file_name) # save csv
+    return
+
+kws = ['Data Kwaliteit', 'Data Steward', 'business intelligence']
+for kw in kws:
+    check(kw)
