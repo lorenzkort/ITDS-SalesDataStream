@@ -43,8 +43,8 @@ def notify(df, file_name, keyword, chat_id='-425371692'):
     return
 
 def check(keyword='Data Steward', chat_id='-459671235'):
-    #dir = 'data/'
-    pi_dir = '/home/pi/Documents/Python/ITDS/data/'
+    #dir = 'data/' # @Windows
+    dir = '/home/pi/Documents/Python/ITDS/data/' # @raspberyPi
     file_name = dir + 'Monsterboard_' + keyword.replace(' ','_').lower() + '_response.csv'
     try:
         items_df = create_df(keyword) # get items
@@ -54,6 +54,6 @@ def check(keyword='Data Steward', chat_id='-459671235'):
     items_df.to_csv(file_name) # save csv
     return
 
-kws = ['Data Kwaliteit']#, 'Data Steward', 'business intelligence']
+kws = ['Data Kwaliteit', 'Data Steward', 'business intelligence']
 for kw in kws:
     check(kw)
