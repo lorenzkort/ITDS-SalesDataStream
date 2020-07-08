@@ -54,6 +54,3 @@ def check(keyword='Data Steward', chat_id='-459671235'):
     items_df.to_csv(file_name) # save csv
     return
 
-kws = ['Data Kwaliteit', 'Data Steward', 'business intelligence']
-for kw in kws:
-    check(kw)
