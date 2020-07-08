@@ -48,7 +48,7 @@ def check(keyword='Data Steward', chat_id='-459671235'):
     file_name = dir + 'Monsterboard_' + keyword.replace(' ','_').lower() + '_response.csv'
     try:
         items_df = create_df(keyword) # get items
-        #notify(items_df, file_name, keyword, chat_id) # mail new id's
+        notify(items_df, file_name, keyword, chat_id) # mail new id's
     except:
         items_df = pd.DataFrame()
     items_df.to_csv(file_name) # save csv
