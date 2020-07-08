@@ -24,12 +24,11 @@ def create_df(keyword='Data Analyst'):
     url = get_url(keyword)
     soup = get_soup(url)
     jresponse = get_itemlinks(soup)
-    jresponse = [str(i['url']) for i in jresponse["itemListElement"]]
+    jresponse = [str(i['url']).replace(u'\u2013', '-').replace(u'\u2014', '-') for i in jresponse["itemListElement"]]
     df = pd.DataFrame({'keyword':keyword,'url':jresponse})
     df['url'].replace('', np.nan, inplace=True)
     df.dropna(subset=['url'], inplace=True)
-    #df[~df['url'].str.contains(r"---")]
-    #windows_dir = 'C:\\Users\\LorenzKort\'
+    df['url']
     return df
 
 def notify(df, file_name, keyword, chat_id='-425371692'):
@@ -38,15 +37,14 @@ def notify(df, file_name, keyword, chat_id='-425371692'):
             if any(df['url'][ind] in line for line in f):
                 pass # known id
             else:
-                print('New ' + keyword)
-                telegram_send_text('Nieuwe vacature met keyword "' + keyword + '": ' + df['url'][ind], chat_id)
+                print('New ' + keyword + ':' + df['url'][ind])
+                #telegram_send_text('Nieuwe vacature met keyword "' + keyword + '": ' + df['url'][ind], chat_id)
                 break
     return
 
 def check(keyword='Data Steward', chat_id='-459671235'):
-    #pi_dir = '/home/pi/Documents/Python/...'
-    #mac_dir = '/Users/lorenzkort/Documents/Python/marktplaatsMaster/data/'
-    dir = ''
+    #dir = 'data/'
+    pi_dir = '/home/pi/Documents/Python/ITDS/data/'
     file_name = dir + 'Monsterboard_' + keyword.replace(' ','_').lower() + '_response.csv'
     try:
         items_df = create_df(keyword) # get items
@@ -56,6 +54,6 @@ def check(keyword='Data Steward', chat_id='-459671235'):
     items_df.to_csv(file_name) # save csv
     return
 
-kws = ['Data Kwaliteit', 'Data Steward', 'business intelligence']
+kws = ['Data Kwaliteit']#, 'Data Steward', 'business intelligence']
 for kw in kws:
     check(kw)
