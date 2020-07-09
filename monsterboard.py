@@ -28,7 +28,6 @@ def create_df(keyword='Data Analyst'):
     df = pd.DataFrame({'keyword':keyword,'url':jresponse})
     df['url'].replace('', np.nan, inplace=True)
     df.dropna(subset=['url'], inplace=True)
-    df['url']
     return df
 
 def notify(df, file_name, keyword, chat_id='-425371692'):
@@ -53,4 +52,3 @@ def check(keyword='Data Steward', chat_id='-459671235'):
         items_df = pd.DataFrame()
     items_df.to_csv(file_name) # save csv
     return
-
