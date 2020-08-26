@@ -58,5 +58,3 @@ def check_careerguide(keyword='Data Steward', chat_id='-459671235'):
         print('No saved file found')
     items_df.to_csv(file_name) # save csv
     return
-
-check_careerguide()
