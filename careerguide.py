@@ -50,7 +50,7 @@ def notify(df, file_name, keyword, chat_id='-425371692'):
 def check_careerguide(keyword='Data Steward', chat_id='-459671235'):
     dir = 'data/' # @Windows
     #dir = '/home/pi/Documents/Python/ITDS/data/' # @raspberyPi
-    file_name = dir + 'CareerGuide' + keyword.replace(' ','_').lower() + '_response.csv'
+    file_name = dir + 'CareerGuide_' + keyword.replace(' ','_').lower() + '_response.csv'
     items_df = create_df(keyword) # get items
     try:
         notify(items_df, file_name, keyword, chat_id) # mail new id's
