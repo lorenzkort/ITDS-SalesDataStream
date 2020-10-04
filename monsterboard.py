@@ -42,8 +42,8 @@ def notify(df, file_name, keyword, chat_id='-425371692'):
     return
 
 def check_monsterboard(keyword='Data Steward', chat_id='-459671235'):
-    dir = 'data/' # @Windows
-    #dir = '/home/pi/Documents/Python/ITDS/data/' # @raspberyPi
+    #dir = 'data/' # @Windows
+    dir = '/home/pi/Documents/Python/ITDS/data/' # @raspberyPi
     file_name = dir + 'Monsterboard_' + keyword.replace(' ','_').lower() + '_response.csv'
     items_df = create_df(keyword) # get items
     try:
