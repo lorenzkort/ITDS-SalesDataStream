@@ -39,24 +39,24 @@ def notify(df, keyword, chat_id='-425371692'):
     return [telegram_send_text(f'Keyword "{keyword}":\n {url}') for url in df['url']]
     
 def get_new_items(new_df, keyword):
+    old_df = pd.read_csv(get_path(keyword))
     try:
-        old_df = pd.read_csv(get_path(keyword)) #try getting file
         old_df = old_df[['url']]
         new_items = new_df.assign(Inold_df=new_df.url.isin(old_df.url).astype(int))
         new_items = new_items[new_items['Inold_df']==0]
         return new_items
     except:
-        print('Failed to convert existing file to pandas dataframe')
+        print('File still empty')
     return
 
 def check_monsterboard(keyword='Data', chat_id='-459671235'):
     response_df = create_df(keyword) # get items
     new_items = get_new_items(response_df, keyword) # mail new id's
-    if len(new_items.index) > 0:
+    if os.path.getsize(get_path(keyword)) != 0:
         notify(new_items, keyword)
+        print(f'{len(new_items)} new for {keyword}')
     response_df.to_csv(get_path(keyword)) # save csv
     return new_items
 
 if __name__ == "__main__":
     check_monsterboard()
-    
