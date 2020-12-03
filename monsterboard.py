@@ -1,54 +1,63 @@
-import requests
-from bs4 import BeautifulSoup
+from pathlib import Path
+import os, requests, copy
+from bs4 import BeautifulSoup as bs
 import json
 import pandas as pd
 import numpy as np
 from telegram_bot import telegram_send_text
 
 def get_url(keyword):
-    url = 'https://www.monsterboard.nl/vacatures/zoeken/?q=' + str(keyword).replace(' ', '-') + '&cy=nl'
+    url = 'https://www.monsterboard.nl/vacatures/zoeken/?q=' + str(keyword).replace(' ', '-') + '&tm=7&cy=nl&tm=30&page=10'
     return url
+
+def get_path(keyword):
+    #dir = 'data/' # @Windows
+    dir = '/home/pi/Documents/Python/ITDS/data/' # @raspberyPi
+    filename = Path(dir + 'monsterboard_' + keyword.replace(' ','_').lower() + '_response.csv')
+    if not filename.exists():
+        open(filename, 'w+').close()
+    return filename
 
 def get_soup(url):
     page = requests.get(url).text
-    soup = BeautifulSoup(str(page), 'html.parser')
+    soup = bs(str(page), 'html.parser')
     return soup
 
-def get_itemlinks(soup):
-    soup = soup.find('div', {'class': 'scrollable'})
-    soup = soup.find('script',{'type': 'application/ld+json'}).contents
-    soup = json.loads(soup[0])
-    return soup
+def get_listings(soup):
+    soup = soup.find_all('div', class_='summary')
+    items = [item.find('h2', class_='title').find('a', href=True)['href'].encode('Latin-1', 'ignore').decode('Latin-1') for item in soup if item.find('h2', class_='title') is not None]
+    return items
 
-def create_df(keyword='Data Analyst'):
+def create_df(keyword):
     url = get_url(keyword)
     soup = get_soup(url)
-    jresponse = get_itemlinks(soup)
-    jresponse = [str(i['url']).replace(u'\u2013', '-').replace(u'\u2014', '-') for i in jresponse["itemListElement"]]
-    df = pd.DataFrame({'keyword':keyword,'url':jresponse})
-    df['url'].replace('', np.nan, inplace=True)
-    df.dropna(subset=['url'], inplace=True)
+    items = sorted(get_listings(soup))
+    df = pd.DataFrame(items, columns=['url']).drop_duplicates()
     return df
 
-def notify(df, file_name, keyword, chat_id='-425371692'):
-    with open(file_name, 'r') as f:
-        for ind in df.index:
-            if any(df['url'][ind] in line for line in f):
-                pass # known id
-            else:
-                print('New ' + keyword + ':' + df['url'][ind])
-                telegram_send_text('Nieuwe vacature met keyword "' + keyword + '": ' + df['url'][ind], chat_id)
-                break
+def notify(df, keyword, chat_id='-425371692'):
+    return [telegram_send_text(f'Keyword "{keyword}":\n {url}') for url in df['url']]
+    
+
+def get_new_items(new_df, keyword):
+    try:
+        old_df = pd.read_csv(get_path(keyword)) #try getting file
+        old_df = old_df[['url']]
+        new_items = new_df.assign(Inold_df=new_df.url.isin(old_df.url).astype(int))
+        new_items = new_items[new_items['Inold_df']==0]
+        return new_items
+    except:
+        print('Failed to convert existing file to pandas dataframe')
     return
 
-def check_monsterboard(keyword='Data Steward', chat_id='-459671235'):
-    dir = 'data/' # @Windows
-    #dir = '/home/pi/Documents/Python/ITDS/data/' # @raspberyPi
-    file_name = dir + 'Monsterboard_' + keyword.replace(' ','_').lower() + '_response.csv'
-    items_df = create_df(keyword) # get items
-    try:
-        notify(items_df, file_name, keyword, chat_id) # mail new id's
-    except:
-        print('No saved file found')
-    items_df.to_csv(file_name) # save csv
-    return
+def check_monsterboard(keyword='Data', chat_id='-459671235'):
+    response_df = create_df(keyword) # get items
+    new_items = get_new_items(response_df, keyword) # mail new id's
+    if len(new_items.index) > 0:
+        notify(new_items, keyword)
+    response_df.to_csv(get_path(keyword)) # save csv
+    return new_items
+
+if __name__ == "__main__":
+    check_monsterboard()
+    
