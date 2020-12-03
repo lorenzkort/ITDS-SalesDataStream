@@ -38,7 +38,6 @@ def create_df(keyword):
 def notify(df, keyword, chat_id='-425371692'):
     return [telegram_send_text(f'Keyword "{keyword}":\n {url}') for url in df['url']]
     
-
 def get_new_items(new_df, keyword):
     try:
         old_df = pd.read_csv(get_path(keyword)) #try getting file
