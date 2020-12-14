@@ -11,8 +11,8 @@ def get_url(keyword):
     return url
 
 def get_path(keyword):
-    dir = 'data/' # @Windows
-    #dir = '/home/pi/Documents/Python/ITDS/data/' # @raspberyPi
+    #dir = 'data/' # @Windows
+    dir = '/home/pi/Documents/Python/ITDS/data/' # @raspberyPi
     filename = Path(dir + 'monsterboard_' + keyword.replace(' ','_').lower() + '_response.csv')
     if not filename.exists():
         with open(filename, 'w+') as f:
