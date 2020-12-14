@@ -11,11 +11,13 @@ def get_url(keyword):
     return url
 
 def get_path(keyword):
-    #dir = 'data/' # @Windows
-    dir = '/home/pi/Documents/Python/ITDS/data/' # @raspberyPi
+    dir = 'data/' # @Windows
+    #dir = '/home/pi/Documents/Python/ITDS/data/' # @raspberyPi
     filename = Path(dir + 'monsterboard_' + keyword.replace(' ','_').lower() + '_response.csv')
     if not filename.exists():
-        open(filename, 'w+').close()
+        with open(filename, 'w+') as f:
+            f.write(',url')
+            f.close()
     return filename
 
 def get_soup(url):
@@ -56,7 +58,7 @@ def check_monsterboard(keyword='Data', chat_id='-459671235'):
         notify(new_items, keyword)
         print(f'{len(new_items)} new for {keyword}')
     response_df.to_csv(get_path(keyword)) # save csv
-    return new_items
+    return new_items 
 
 if __name__ == "__main__":
     check_monsterboard()
